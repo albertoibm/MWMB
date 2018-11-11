@@ -13,9 +13,13 @@ class UI:
         curses.cbreak()
         self.stdscr.keypad(1)
         self.attr = curses.A_ATTRIBUTES
+        self.lastLog = ""
     def log(self,msg):
-        self.stdscr.addstr(curses.LINES-1, 2, msg, curses.A_STANDOUT)
+        clear = " " * len(self.lastLog)
+        self.stdscr.addstr(curses.LINES-1, 0, clear, curses.A_STANDOUT)
+        self.stdscr.addstr(curses.LINES-1, 0, msg, curses.A_STANDOUT)
         self.stdscr.refresh()
+        self.lastLog = msg
     def startColor(self):
         curses.start_color()
         curses.use_default_colors()
@@ -32,7 +36,7 @@ class UI:
             for x in range(width):
                 try:
                     self.windows[self.currentWindow].addch(y,x,c,self.attr)
-                    self.refresh()
+    #                self.refresh()
                 except:pass
     def windowSize(self):
         if self.currentWindow == "":

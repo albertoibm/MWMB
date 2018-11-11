@@ -58,7 +58,7 @@ class Track:
         if length > beats:
             while abs(length - n) > (beats / 2):
                 n += beats
-        k = n / length
+        k = n / (1 + length)
         self.scale(k)
     def scale(self, scaleFactor):
         for msg in self.track:
