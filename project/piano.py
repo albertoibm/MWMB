@@ -4,6 +4,7 @@ class Piano:
     def __init__(self):
         self.output = None
         self.input = None
+        self.logger = None
     def send(self,note=0, velocity = 0):
         if self.output == None:
             return 0
@@ -18,6 +19,7 @@ class Piano:
             return 0
         else:
             self.output.send(msg)
+            self.logMsg(msg)
             return 1
     def setCallback(self,f):
         if self.input != None:
@@ -30,11 +32,20 @@ class Piano:
         else:
             print "No input device!"
             return 0
+    def setLogger(self,logger):
+        self.logger = logger
+    def logMsg(self,msg):
+        if self.logger != None:
+            self.logger.log(msg)
     def receive(self):
         if self.input == None:
             return 0
         else:
             return self.input.receive()
+    def autoconnect(self):
+        [ins,outs] = self.listDevices()
+        if ins[0] != None and outs[0] != None:
+            self.connect(ins[0],outs[0])
     def connect(self,in_ch,out_ch=""):
         if out_ch == "": out_ch = in_ch
         try:

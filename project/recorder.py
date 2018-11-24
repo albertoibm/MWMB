@@ -8,6 +8,7 @@ class Recorder:
         self.recording = False
         self.startTime = None
         self.track = []
+        self.logger = None
         ## Default: (1920 ticks/beat)(120 beats/min)(1/60 min/sec)
         self.ticksPerBeat = 1920
         self.beatsPerMinute = 120
@@ -21,10 +22,16 @@ class Recorder:
                 delay = t*self.sec ## convert to ticks
                 msg.time = int(delay)
                 self.track.append(msg)
+                self.logMsg(msg)
                 self.startTime = time()
     def setPiano(self, p):
         self.piano = p
         return self.piano.setCallback(self.handler)
+    def setLogger(self, logger):
+        self.logger = logger
+    def logMsg(self, msg):
+        if self.logger != None:
+            self.logger.log(msg)
     def timer(self):
         return time()-self.startTime
     def record(self):

@@ -1,4 +1,4 @@
-from mido import MidiFile
+from mido import MidiFile,Message
 class Track:
     global to_be_taken
     to_be_taken = ['note_on','control_change']#+['program_change']
@@ -42,6 +42,15 @@ class Track:
         for msg in self.track:
             length += msg.time
         return length
+    def appendNote(self, note, velocity, time, seconds = False):
+        msg = Message("note_on")
+        msg.note = note
+        msg.velocity = velocity
+        ## time (s) * (ticks / beat) * (beats / min) * (1min / 60s)
+        msg.time = time if seconds == False else time * self.ticksPerBeat * self.beatsPerMinute / 60
+        self.appendMsg(msg)
+    def appendMsg(self, msg):
+        self.track.append(msg)
     def quantize(self, smallest = 16):
         newTrack = []
         multipleOf = float(self.ticksPerBeat) / smallest

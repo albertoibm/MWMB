@@ -15,6 +15,7 @@ class UI:
         self.attr = curses.A_ATTRIBUTES
         self.lastLog = ""
     def log(self,msg):
+        msg = msg.replace("\n"," - ")
         clear = " " * len(self.lastLog)
         self.stdscr.addstr(curses.LINES-1, 0, clear, curses.A_STANDOUT)
         self.stdscr.addstr(curses.LINES-1, 0, msg, curses.A_STANDOUT)

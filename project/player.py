@@ -17,6 +17,7 @@ class Player(threading.Thread):
         self.running = True
         self._transpose = 0
         self.beatsPerMinute = 160
+        self._playOnce = False
     def setPiano(self, p):
         self.piano = p
     def setTrack(self, t):
@@ -31,6 +32,9 @@ class Player(threading.Thread):
             sleep(0.1)
     def play(self, status = True):
         self.playing = status
+    def playOnce(self):
+        self._playOnce = True
+        self.play()
     def pause(self):
         self.playing = False
     def toggle(self):
@@ -66,3 +70,7 @@ class Player(threading.Thread):
                         msg.note += self._transpose
                     #print msg
                     self.piano.sendMsg(msg)
+            if self._playOnce:
+                self.playing = False
+                self.running = False
+                self._playOnce = False
