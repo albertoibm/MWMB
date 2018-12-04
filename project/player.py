@@ -13,6 +13,7 @@ class Player(threading.Thread):
         threading.Thread.__init__(self)
         self.piano = None
         self.track = None
+        self.preMsg = []
         self.playing = False
         self.running = True
         self._transpose = 0
@@ -20,10 +21,26 @@ class Player(threading.Thread):
         self._playOnce = False
     def setPiano(self, p):
         self.piano = p
+    def clearTrack(self):
+        self.track = None
     def setTrack(self, t):
         #print "Received track with %d messages"%len(t.track)
         self.track = t
+        i = 0
+        while 1:
+            try:
+                if self.track.track[i].type != "note_on":
+                    self.preMsg.append(self.track.track[i])
+                    del(self.track.track[i])
+                else:
+                    i += 1
+            except:
+                break
         self.beatsPerMinute = self.track.beatsPerMinute
+    def getLength(self):
+        if self.track != None:
+            return self.track.getLength()
+        return [None,None,None]
     def run(self):
         self.playing = False
         while self.running:
@@ -69,6 +86,8 @@ class Player(threading.Thread):
                     if msg.type == "note_on":
                         msg.note += self._transpose
                     #print msg
+                    for ctrl in self.preMsg:
+                        self.piano.sendMsg(ctrl)
                     self.piano.sendMsg(msg)
             if self._playOnce:
                 self.playing = False

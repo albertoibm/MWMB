@@ -2,7 +2,7 @@ from time import time,sleep
 from track import Track
 class Recorder:
     global to_be_recorded
-    to_be_recorded = ['note_on','control_change']#+['program_change']
+    to_be_recorded = ['note_on']#,'control_change']#+['program_change']
     def __init__(self,tracks = 1):
         self.piano = None
         self.recording = False
@@ -24,6 +24,10 @@ class Recorder:
                 self.track.append(msg)
                 self.logMsg(msg)
                 self.startTime = time()
+        else:
+            if self.recording:
+                msg.time = 0
+                self.track.append(msg)
     def setPiano(self, p):
         self.piano = p
         return self.piano.setCallback(self.handler)
@@ -50,7 +54,10 @@ class Recorder:
         return False
     def stopRecording(self):
         if self.piano != None and self.recording and self.track != []:
-            self.track[0].time = 0
+            for msg in self.track:
+                msg.time = 0
+                if msg.type == "note_on":
+                    break
             self.recording = False
             self.startTime = None
     def clear(self):

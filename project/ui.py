@@ -64,6 +64,12 @@ class UI:
         self.windows[self.currentWindow].addstr(s, self.attr)
     def putStrXY(self, x, y, s):
         self.windows[self.currentWindow].addstr(y, x, s, self.attr)
+    def putStrWin(self,s):
+        x, y = self.windowSize()
+        y = 0
+        for line in s.split('\n'):
+            self.putStrXY(0, y, line)
+            y += 1
     def getChar(self):
         return self.stdscr.getch()
     def setWindow(self,win):
@@ -84,7 +90,6 @@ class UI:
             newname = name
         self.windows[newname] = curses.newwin(height, width, y, x)
         return newname
-
     def quit(self, msg=""):
         curses.nocbreak()
         self.stdscr.keypad(0)

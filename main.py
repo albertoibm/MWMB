@@ -9,7 +9,7 @@ from piano.recorder import Recorder
 from piano.logger import Logger
 from piano.button import Button,Status
 from piano.ui import UI
-
+import piano.codec as codec
 
 class MWMB:
     def __init__(self, piano = None, in_ = None, out_ = None, quiet = True):
@@ -40,9 +40,9 @@ class MWMB:
         self.setup()
         self.connect()
     def run(self):
-        keys = ['1','2','3',\
+        keys = ['7','8','9',\
                 '4','5','6',\
-                '7','8','9']
+                '1','2','3']
  #       self.piano.connect(self._in, self._out)
 #        self.rec.setPiano(self.piano)
         self.connect()
@@ -58,10 +58,12 @@ class MWMB:
             y = (idx / 3) * height / 3
             win = ui.newWindow(height/3,width/3,"btn_{}".format(key),x,y)
             self.pad[key] = Button(self.piano, self.rec, win)
-            ui.setWindow(win)
+        ui.refresh()
+        for k in keys:
+            ui.setWindow(self.pad[k].window())
             ui.setColorPair(262)
             ui.fill()
-        ui.refresh()
+            ui.refresh()
 
         # Run loop
         selected = None
@@ -85,6 +87,12 @@ class MWMB:
 #                color = 259+int(random()*40)
                 ui.setColorPair(color)
                 ui.fill()
+                length = self.pad[k].getLength()
+                toprint = str(status)+"\n"
+                toprint += "length:\n"
+                toprint += "{} s\n".format(length[0])
+                toprint += "{} beats".format(length[1])
+                ui.putStrWin(toprint)
                 ui.log("{}".format(status.name))
             elif k == "c":
                 ui.log("Clear. Select a Track")
@@ -101,6 +109,10 @@ class MWMB:
                     ui.log("Aborted")
             elif k == "r":
                 ui.log("Reconnecting")
+                self.piano.connect()
+            elif k == "s":
+                ui.log("Saving session")
+                codec.write(self.pad)
 
             # Exit if k == ESC or 'q'
             elif _k == 27 or k == "q":

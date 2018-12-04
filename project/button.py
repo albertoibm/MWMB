@@ -1,4 +1,5 @@
 from player import Player
+from track import Track
 from enum import Enum
 class Status(Enum):
     """
@@ -34,6 +35,17 @@ class Button:
         self.player.setPiano(self.piano)
     def setRecorder(self,rec):
         self.rec = rec
+    def getLength(self):
+        return self.player.getLength()
+    def loadTrack(self,track):
+        if type(track) is list:
+            self.player.setTrack(Track(track=track))
+        elif isinstance(track,Track):
+            self.player.setTrack(track)
+        if self.player.track.isEmpty():
+            self.status = Status.Clear
+        else:
+            self.status = Status.Ready
     def window(self):
         return self._window
     def press(self):
@@ -68,4 +80,5 @@ class Button:
     def doublePress(self):
         self.status = Status.Clear
         self.player.pause()
+        self.player.clearTrack()
         return self.status

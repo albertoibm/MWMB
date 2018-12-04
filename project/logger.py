@@ -35,7 +35,9 @@ class Logger:
         self.buffer.append(self.readMsg(msg))
 #        print("Logged msg "+self.buffer[-1])
     def readMsg(self,msg):
-        return "n{},t{},v{};".format(msg.note,msg.time,msg.velocity)
+        if msg.type == "note_on":
+            return "n{},t{},v{};".format(msg.note,msg.time,msg.velocity)
+        return ""
     def setPiano(self,piano):
         self.piano = piano
         if self.piano != None:

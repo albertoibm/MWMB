@@ -10,6 +10,8 @@ class Track:
             self.track = [] ## List of messages
         else:
             self.track = track
+    def isEmpty(self):
+        return self.track == []
     def loadFile(self, filename):
         self.track = [] # Clear track
         midi = MidiFile(filename)
@@ -22,9 +24,9 @@ class Track:
         except IndexError:
             self.track.reverse()
     ## getLength
-    #
-    # Get length of track in seconds
     def getLength(self):
+        return [self.getLengthInSec(),self.getLengthInBeats(),None]
+    def getLengthInSec(self):
         try:
             # If length != None
             return 0 + self.length
@@ -63,11 +65,13 @@ class Track:
     # scale the track to a number of beats multiple of beats in a bar
     def scaleToBar(self, beats = 4):
         length = self.getLengthInBeats()
+        if length == 0:
+            return None
         n = float(beats)
         if length > beats:
             while abs(length - n) > (beats / 2):
                 n += beats
-        k = n / (1 + length)
+        k = n / length
         self.scale(k)
     def scale(self, scaleFactor):
         for msg in self.track:
