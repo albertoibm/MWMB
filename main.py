@@ -57,7 +57,7 @@ class MWMB:
             x = (idx % 3) * width / 3
             y = (idx / 3) * height / 3
             win = ui.newWindow(height/3,width/3,"btn_{}".format(key),x,y)
-            self.pad[key] = Button(self.piano, self.rec, win)
+            self.pad[key] = Button(self.piano, self.rec, win, int(key))
         ui.refresh()
         for k in keys:
             ui.setWindow(self.pad[k].window())
@@ -91,7 +91,8 @@ class MWMB:
                 toprint = str(status)+"\n"
                 toprint += "length:\n"
                 toprint += "{} s\n".format(length[0])
-                toprint += "{} beats".format(length[1])
+                toprint += "{} beats\n".format(length[1])
+                toprint += "{} ticks".format(length[2])
                 ui.putStrWin(toprint)
                 ui.log("{}".format(status.name))
             elif k == "c":
@@ -109,11 +110,13 @@ class MWMB:
                     ui.log("Aborted")
             elif k == "r":
                 ui.log("Reconnecting")
-                self.piano.connect()
+                self.piano.autoconnect()
             elif k == "s":
                 ui.log("Saving session")
                 codec.write(self.pad)
-
+            elif k == "p":
+                ui.log("Reset piano (Panic)")
+                self.piano.output.panic()
             # Exit if k == ESC or 'q'
             elif _k == 27 or k == "q":
                 ui.log("Exiting")

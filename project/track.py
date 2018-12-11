@@ -25,7 +25,7 @@ class Track:
             self.track.reverse()
     ## getLength
     def getLength(self):
-        return [self.getLengthInSec(),self.getLengthInBeats(),None]
+        return [self.getLengthInSec(),self.getLengthInBeats(),self.getLengthInTicks()]
     def getLengthInSec(self):
         try:
             # If length != None
@@ -37,7 +37,7 @@ class Track:
             return self.length
     def getLengthInBeats(self):
         length = self.getLengthInTicks()
-        length = length / self.ticksPerBeat
+        length = 1.*length / self.ticksPerBeat
         return length
     def getLengthInTicks(self):
         length = 0
@@ -64,15 +64,16 @@ class Track:
     ## scaleToBar
     # scale the track to a number of beats multiple of beats in a bar
     def scaleToBar(self, beats = 4):
-        length = self.getLengthInBeats()
+        ticks = beats * self.ticksPerBeat
+        length = self.getLengthInTicks()
         if length == 0:
             return None
-        n = float(beats)
-        if length > beats:
-            while abs(length - n) > (beats / 2):
-                n += beats
+        n = float(ticks)
+        if length > ticks:
+            while abs(length - n) > (ticks / 2):
+                n += ticks
         k = n / length
         self.scale(k)
     def scale(self, scaleFactor):
         for msg in self.track:
-            msg.time = int(msg.time * scaleFactor)
+            msg.time = int(round(msg.time * scaleFactor))

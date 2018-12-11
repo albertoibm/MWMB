@@ -20,10 +20,11 @@ class Button:
     button.press()          # Pause playback
     button.doublePress()    # Set to record again
     """
-    def __init__(self,piano=None,rec=None,window=None):
+    def __init__(self,piano=None,rec=None,window=None,channel=0):
         self.status = Status.Clear
         self.player = Player()
         self.player.start()
+        self.channel = channel
         self.setPiano(piano)
         self.setRecorder(rec)
         self._window = window
@@ -40,8 +41,10 @@ class Button:
     def loadTrack(self,track):
         if type(track) is list:
             self.player.setTrack(Track(track=track))
+            self.player.setChannel(self.channel)
         elif isinstance(track,Track):
             self.player.setTrack(track)
+            self.player.setChannel(self.channel)
         if self.player.track.isEmpty():
             self.status = Status.Clear
         else:
@@ -62,8 +65,10 @@ class Button:
             if self.rec.recording:
                 self.rec.stopRecording()
                 track = self.rec.emit()
-                track.scaleToBar(4)
+                #track.quantize()
+                track.scaleToBar(2)
                 self.player.setTrack(track)
+                self.player.setChannel(self.channel)
                 self.rec.clear()
                 self.status = Status.Ready
         elif self.status == Status.Ready:

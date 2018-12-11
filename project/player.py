@@ -37,6 +37,10 @@ class Player(threading.Thread):
             except:
                 break
         self.beatsPerMinute = self.track.beatsPerMinute
+    def setChannel(self, channel):
+        for msg in self.preMsg + self.track.track:
+            try:msg.channel = channel
+            except:pass
     def getLength(self):
         if self.track != None:
             return self.track.getLength()
@@ -76,6 +80,8 @@ class Player(threading.Thread):
         self.beatsPerMinute = int(arg)
     def _play(self):
         if self.piano != None and self.track != None:
+            for ctrl in self.preMsg:
+                self.piano.sendMsg(ctrl)
             for _msg in self.track.track:
                 delay = _msg.time * 60.0 / self.track.ticksPerBeat / self.beatsPerMinute
                 sleep(delay)
@@ -86,8 +92,6 @@ class Player(threading.Thread):
                     if msg.type == "note_on":
                         msg.note += self._transpose
                     #print msg
-                    for ctrl in self.preMsg:
-                        self.piano.sendMsg(ctrl)
                     self.piano.sendMsg(msg)
             if self._playOnce:
                 self.playing = False
