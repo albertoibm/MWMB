@@ -77,6 +77,12 @@ track.loadFile(filename)
 track.scaleToBar()
 print "Testing quantize %d"%quant
 track.quantize(quant)
+print "Testing writeTrackFile"
+track.writeTrackFile("track_test.trk")
+print "Testing readTrackFile"
+track.readTrackFile("track_test.trk")
+print "Compare track_test.trk with track_test2.trk to make sure it went well"
+track.writeTrackFile("track_test2.trk")
 player.setTrack(track)
 player.play()
 raw_input("Press Enter to exit")

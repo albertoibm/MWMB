@@ -1,0 +1,19 @@
+%% Example of Midi Track as trk file for easier editing
+%% First line is Ticks per Beat
+%% Second line is Beats per Minute
+%% The third line is the number of messages the track has (including velocity=0, so it doesn't correspond with the number of lines of this file)
+%% Then it's the list of messages (only note_on)
+%% with the following format:
+%%
+%% Number 	Time 	Note 	Velocity 	Length
+%%
+%% Where:
+%% Number is the position of the message in the track
+%% Time is the timetag in absolute time (seconds) since the track began (for easier reading, not contained in the MIDI message)
+%% Note is the note number
+%% Velocity is the velocity field from the MIDI message (not including 0)
+%% Length is the time (seconds) it takes for the velocity=0 message to come after
+1920
+120
+0 	0 	0 	60 	60 	6
+
