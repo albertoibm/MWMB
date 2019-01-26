@@ -72,9 +72,31 @@ if "-f" in argv:
     force = 1.0 / 100 * int(argv[argv.index("-f")+1])
 
 piano = Piano()
-piano.autoconnect()
+[ins,outs] = piano.listDevices()
+if "-i" in argv or "--input" in argv:
+    print("[+] List of input devices")
+    for i in range(len(ins)):
+	print "%d: %s"%(i+1,ins[i])
+    inDev = ins[int(raw_input("Select input device: "))-1]
+else:
+    inDev = ins[0]
+if "-o" in argv or "--output" in argv:
+    print "[+] List of output devices"
+    for i in range(len(outs)):
+	print "%d: %s"%(i+1,outs[i])
+    outDev = outs[int(raw_input("Select output device: "))-1]
+else:
+    outDev = outs[0]
+
+piano.connect(inDev,outDev)
+#piano.autoconnect()
+
 print("Press the key on which the scale is based")
 msg = piano.receive()
+if type(msg) is int:
+    exit("Not connected!")
+while msg.type != "note_on":
+    msg = piano.receive()
 base = msg.note
 print (base/12)
 Note = letters[base%12]+str(base/12)
