@@ -1,5 +1,6 @@
 import threading
 from time import sleep
+from utils import note2char
 class Player(threading.Thread):
     """
     player = Player()       # Create object
@@ -19,6 +20,8 @@ class Player(threading.Thread):
         self._transpose = 0
         self.beatsPerMinute = 160
         self._playOnce = False
+        self.verbose = False
+        self.n = 0
     def setPiano(self, p):
         self.piano = p
     def clearTrack(self):
@@ -29,7 +32,7 @@ class Player(threading.Thread):
         i = 0
         while 1:
             try:
-                if self.track.track[i].type != "note_on":
+                if self.track.track[i].type not in ["note_on", "control_change"]:
                     self.preMsg.append(self.track.track[i])
                     del(self.track.track[i])
                 else:
@@ -51,11 +54,14 @@ class Player(threading.Thread):
             while self.playing:
                 self._play()
             sleep(0.1)
-    def play(self, status = True):
+    def setN(self, n):
+        self.n = n
+    def play(self, status = True, verbose = False):
         self.playing = status
-    def playOnce(self):
+        self.verbose = verbose
+    def playOnce(self, verbose = False):
         self._playOnce = True
-        self.play()
+        self.play(verbose=verbose)
     def pause(self):
         self.playing = False
     def toggle(self):
@@ -91,8 +97,15 @@ class Player(threading.Thread):
                     msg = _msg.copy()
                     if msg.type == "note_on":
                         msg.note += self._transpose
-                    #print msg
+                    if self.verbose:
+                        if msg.type == "note_on" and msg.velocity > 0:
+                            print("{} - {}({}), {}".format(self.n, msg.note,note2char(msg.note),msg.velocity))
+                            self.n += 1
+                        elif msg.type == "control_change":
+                            print("{} - ctrl: {}, val: {}".format(self.n, msg.control, msg.value))
+                        #print msg
                     self.piano.sendMsg(msg)
+            self.n = 0
             if self._playOnce:
                 self.playing = False
                 self.running = False

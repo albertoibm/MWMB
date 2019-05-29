@@ -28,6 +28,7 @@ class UI:
 	    curses.init_pair(i + 1, i, -1)
     def refresh(self):
         self.windows[self.currentWindow].refresh()
+        self.stdscr.refresh()
     def clear(self):
         if self.currentWindow != "":
             self.windows[self.currentWindow].clear()
@@ -63,7 +64,10 @@ class UI:
     def putStr(self, s):
         self.windows[self.currentWindow].addstr(s, self.attr)
     def putStrXY(self, x, y, s):
-        self.windows[self.currentWindow].addstr(y, x, s, self.attr)
+        try:
+            self.windows[self.currentWindow].addstr(y, x, s, self.attr)
+        except:
+            self.log("Error with x=%d, y=%d"%(x,y))
     def putStrWin(self,s):
         x, y = self.windowSize()
         y = 0

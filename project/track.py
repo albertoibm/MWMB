@@ -1,4 +1,6 @@
 from mido import MidiFile,Message
+PEDAL_ON  = Message(type="control_change",control=64,value=127)
+PEDAL_OFF = Message(type="control_change",control=64,value=0)
 class Track:
     global to_be_taken
     to_be_taken = ['note_on','control_change']#+['program_change']
@@ -32,14 +34,14 @@ class Track:
                 else:
                     msg = self.track[i]
                     note = msg.note
-                    length = msg.time
+                    length = 0#msg.time
                     j = i + 1
                     while j != len(self.track):
                         length += self.track[j].time
                         if self.track[j].type == "note_on":
                             if self.track[j].note == note:
                                 skip.append(j)
-                                length -= self.track[j].time
+                               # length -= self.track[j].time
                                 break
                         j += 1
                     length *= self.seconds
@@ -47,18 +49,19 @@ class Track:
                     fopen.write("{:4.5f}\t\t".format(t))
                     fopen.write("{}\t\t".format(note2char(msg.note)))
                     fopen.write("{:3}\t\t".format(msg.velocity))
-                    fopen.write("{:3.5f}\n".format(length))
+                    fopen.write("{:3.5f}\t\t".format(length))
+                    fopen.write("{}\n".format(msg.time))
                     n += 1
     def readTrackFile(self, filename, fro = 0, to = -1):
         ## Clear track
         self.clear()
-        from utils import splitLine
+        from utils import splitLine, note2char
         fopen = open(filename)
         line = fopen.readline().strip()
         i = -1
         total = 0
-        currTicks = 0
         currTime = 0
+        timeShift = 0
         coming = {}
         ## Read file
         while line != "":
@@ -79,7 +82,26 @@ class Track:
                         to = total / 2
                 else:
                     # Parse line's info
-                    _id, time, note, velocity, length = splitLine(line)
+                    try:
+                        _id, time, note, velocity, length = splitLine(line)
+                        time += timeShift
+                    except ValueError:
+                        ## Line can't be parsed
+                        # So it's probably a time-shift
+                        if line.startswith('t'):
+                            line = line.replace(' ','')
+                            shift = float(line[1:])
+                            timeShift += shift
+                        elif line.startswith("pedal"):
+                            if line.endswith("on"):
+                                # Add pedal on (ctrl_ch,ctrl=64,val=127)
+                                print("Added {}".format(PEDAL_ON))
+                                self.appendMsg(PEDAL_ON)
+                            elif line.endswith("off"):
+                                print("Added {}".format(PEDAL_OFF))
+                                self.appendMsg(PEDAL_OFF)
+                        # Skip to next line
+                        _id = -1
                     # If it's within range
                     if _id >= fro and _id <= to:
                         while time in coming:
@@ -90,19 +112,24 @@ class Track:
                         while time+length in coming:
                             # No repeated, overwritten msgs
                             length += 0.00000001
-                        # And add the closing one (lift finger)
+                        # And add the closing one (lift finger off key)
                         coming[time+length] = [note, 0]
                         ## All done, add all necessary messages (until we reach current time)
-                        keys = coming.keys()
-                        keys.sort(reverse=True) # Sort first is last
-                        print coming
+                        times = coming.keys()
+                        times.sort(reverse=True) # Sort first is last
                         while currTime != time:
-                            t = keys.pop()
+                            t = times.pop()
                             note, velocity = coming.pop(t)
                             delay = abs(t - currTime)
                             self.appendNote(note, velocity, delay, True)
                             currTime = t
             line = fopen.readline().strip()
+        i = 0
+        while 1:
+            self.track[i].time = 0
+            if self.track[i].type == "note_on":
+                break
+            i += 1
 
     def loadFile(self, filename):
         self.track = [] # Clear track
@@ -116,6 +143,11 @@ class Track:
                     self.track.append(msg)
         except IndexError:
             self.track.reverse()
+    def saveFile(self, filename):
+        midi = MidiFile()
+        midi.tracks.append(self.track)
+        midi.ticks_per_beat = self.ticksPerBeat
+        midi.save(filename)
     ## getLength
     def getLength(self):
         return [self.getLengthInSec(),self.getLengthInBeats(),self.getLengthInTicks()]
@@ -142,7 +174,7 @@ class Track:
         msg.note = note
         msg.velocity = velocity
         ## time (s) * (ticks / beat) * (beats / min) * (1min / 60s)
-        msg.time = time if seconds == False else time * self.ticksPerBeat * self.beatsPerMinute / 60
+        msg.time = time if seconds == False else int(round(time / self.seconds))
         self.appendMsg(msg)
     def appendMsg(self, msg):
         self.track.append(msg)
