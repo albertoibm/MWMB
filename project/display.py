@@ -1,6 +1,8 @@
 from track import Track
 from utils import note2char
 
+from netlogger import NetLogger
+
 #from ui import UI
 
 LO = unichr(9603)
@@ -11,12 +13,17 @@ KEYS = 88
 MIN = 0
 MAX = 88
 
+logger = NetLogger("localhost",8370)
+logger.connect()
+
 class Display:
     def __init__(self,ui=None,track=None,width=None,height=None,x=0,y=0):
         self.ui = ui
         if self.ui != None:
+            logger.log("Using ui")
             self.height, self.width = map(int,self.ui.size())
         else:
+            logger.log("Not using ui")
             self.height, self.width = 10,10
         self.cursorY = self.height / 2
         self.cursorX = 44
@@ -35,6 +42,8 @@ class Display:
         self.begin = 0
         self.end = self.height-1
         self.step = 1
+
+        logger.log("Track's length: %.2f beats"%self.length)
 
         self.beats = []
         for i in range(int(self.track.getLengthInBeats()+1)):
@@ -80,13 +89,12 @@ class Display:
                     for i in range(int(beats+1)):
                         self.beats[beatZero+i].append(note)
         if self.ui == None:
-            print "hola"
             for beat in beats:
                 print map(beat,note2char)
     ## Display notes with length
     def update(self):
         self.ui.setColorPair(272)
-        self.ui.putStrXY(0, self.cursorY, " "*((MAX-MIN)/1))
+        self.ui.putStrXY(0, self.cursorY - self.begin, " "*((MAX-MIN)/1))
         self.ui.setColorPair(20)
         self.ui.putStrXY(self.cursorX, self.cursorY, " ")
         for beat in range(self.begin, self.end+1):
@@ -103,15 +111,19 @@ class Display:
         self.ui.refresh()
     def up(self):
         self.cursorY = max(0, self.cursorY-1)
+        logger.log("Up. cursorY = %d"%self.cursorY)
         if self.cursorY < self.height/2 + self.begin:
+            logger.log("cursorY < %d"%(self.height/2 + self.begin))
             self.begin -= self.step
             if self.begin < 0:
                 self.begin += self.step
             else:
                 self.end -= self.step
     def down(self):
-        self.cursorY = min(self.length-1, self.cursorY+1)
+        self.cursorY = min(self.length-2, self.cursorY+1)
+        logger.log("Down. cursorY = %d"%self.cursorY)
         if self.cursorY > self.height/2 + self.begin:
+            logger.log("cursorY > %d"%(self.height/2 + self.begin))
             self.end += self.step
             if self.end > self.length:
                 self.end -= self.step
