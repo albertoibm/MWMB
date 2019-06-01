@@ -20,6 +20,9 @@ track.readTrackFile(fname)
 
 ui = UI()
 ui.startColor()
+widht,height = map(int, ui.size())
+
+win = ui.newWindow
 
 display = Display(ui, track)
 display.createList()
@@ -41,6 +44,8 @@ while 1:
         display.left()
     elif _k == 261: # right
         display.right()
+    elif _k == 10: # enter
+        display.enter()
     elif _k == 27 or k == "q":
         break
     else:

@@ -19,9 +19,12 @@ logger.connect()
 class Display:
     def __init__(self,ui=None,track=None,width=None,height=None,x=0,y=0):
         self.ui = ui
+        # Offset on left side, leaving space for timestamps
+        self.offset = len("00:00.000 ")
         if self.ui != None:
             logger.log("Using ui")
             self.height, self.width = map(int,self.ui.size())
+            self.width -= self.offset
         else:
             logger.log("Not using ui")
             self.height, self.width = 10,10
@@ -43,17 +46,18 @@ class Display:
         self.end = self.height-1
         self.step = 1
 
+
         logger.log("Track's length: %.2f beats"%self.length)
 
         self.beats = []
         for i in range(int(self.track.getLengthInBeats()+1)):
             self.beats.append([])
-        
+        logger.log("width = %d"%self.width)
         ## Create display window
         if self.width > KEYS:
-            displayWidth = KEYS
+            displayWidth = KEYS + self.offset
         else:
-            displayWidth = self.width
+            displayWidth = self.width + self.offset
             MIN = (KEYS - self.width) / 2
             MAX = (KEYS - self.width) / 2 + self.width
         if self.ui != None:
@@ -92,28 +96,33 @@ class Display:
             for beat in beats:
                 print map(beat,note2char)
     ## Display notes with length
+    def putStrXY(self, x, y, txt, colorPair = 272):
+        self.ui.setColorPair(colorPair)
+        self.ui.putStrXY(self.offset+x, y, txt)
     def update(self):
-        self.ui.setColorPair(272)
-        self.ui.putStrXY(0, self.cursorY - self.begin, " "*((MAX-MIN)/1))
-        self.ui.setColorPair(20)
-        self.ui.putStrXY(self.cursorX, self.cursorY, " ")
+        self.putStrXY(0, self.cursorY - self.begin, " "*((MAX-MIN)/1))
+        self.putStrXY(self.cursorX, self.cursorY - self.begin, "+", 2)
         for beat in range(self.begin, self.end+1):
             for note in self.beats[beat]:
                 y = beat - self.begin
                 x = MIN if note < MIN else MAX if note > MAX else note
                 x -= MIN
                 if self.ui != None:
+                    color = 262
                     if self.cursorY == y + self.begin and self.cursorX == x:
-                        self.ui.setColorPair(272)
-                    else:
-                        self.ui.setColorPair(262)
-                    self.ui.putStrXY(x, y, "o")
+                        logger.log("update() - beat = %d"%beat)
+                        logger.log("update() - cursorY = %d"%self.cursorY)
+                        color = 282
+                    self.putStrXY(x, y, "o", color)
         self.ui.refresh()
+    def enter(self):
+        beat = self.cursorY
+        note = self.cursorX
+        logger.log("enter()")
     def up(self):
         self.cursorY = max(0, self.cursorY-1)
         logger.log("Up. cursorY = %d"%self.cursorY)
         if self.cursorY < self.height/2 + self.begin:
-            logger.log("cursorY < %d"%(self.height/2 + self.begin))
             self.begin -= self.step
             if self.begin < 0:
                 self.begin += self.step
@@ -123,7 +132,6 @@ class Display:
         self.cursorY = min(self.length-2, self.cursorY+1)
         logger.log("Down. cursorY = %d"%self.cursorY)
         if self.cursorY > self.height/2 + self.begin:
-            logger.log("cursorY > %d"%(self.height/2 + self.begin))
             self.end += self.step
             if self.end > self.length:
                 self.end -= self.step
@@ -134,17 +142,8 @@ class Display:
     def right(self):
         self.cursorX = min(87, self.cursorX+1)
     def pgup(self):
-        self.cursorY = max(0, self.cursorY-10)
-        self.begin -= self.step * 10
-        if self.begin < 0:
-            self.begin += self.step * 10
-        else:
-            self.end -= self.step * 10
+        for i in range(10):
+            self.up()
     def pgdown(self):
-        self.cursorY = min(self.length, self.cursorY+10)
-        self.end += self.step * 10
-        if self.end > self.length:
-            self.end -= self.step * 10
-        else:
-            self.begin += self.step * 10
-
+        for i in range(10):
+            self.down()
