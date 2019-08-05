@@ -74,9 +74,9 @@ else:
         print "FAILED"
 
 track.loadFile(filename)
-track.scaleToBar()
-print "Testing quantize %d"%quant
-track.quantize(quant)
+#track.scaleToBar()
+#print "Testing quantize %d"%quant
+#track.quantize(quant)
 print "Testing writeTrackFile"
 track.writeTrackFile("track_test.trk")
 print "Testing readTrackFile"

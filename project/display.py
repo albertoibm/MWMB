@@ -1,5 +1,8 @@
 from track import Track
 from utils import note2char
+from piano import Piano
+from player import Player
+from metronome import Metronome
 
 from netlogger import NetLogger
 
@@ -63,6 +66,19 @@ class Display:
         if self.ui != None:
             self.display = self.ui.newWindow(self.height, displayWidth, "display", x, y)
             self.ui.setWindow(self.display)
+
+        ## Connect to Piano
+        self.piano = Piano()
+        self.player = Player()
+        self.player.start()
+        self.player.setPiano(self.piano)
+        self.piano.autoconnect()
+        self.playing = False
+
+        ## Create metronome 
+        beatLength = 60.0 / self.bpm
+        self.metronome = Metronome(self.down, beatLength)
+
     def createList(self):
         skip = []
         t = 0.0
@@ -90,8 +106,9 @@ class Display:
                     length *= self.seconds
                     beats = length * self.bpm / 60.0
                     beatZero = int(round(t / 60.0 * self.bpm))
-                    for i in range(int(beats+1)):
-                        self.beats[beatZero+i].append(note)
+                    for k in range(int(beats+1)):
+                        # Append a list [note, first beat of the note
+                        self.beats[beatZero+k].append([i,k==0])
         if self.ui == None:
             for beat in beats:
                 print map(beat,note2char)
@@ -99,12 +116,21 @@ class Display:
     def putStrXY(self, x, y, txt, colorPair = 272):
         self.ui.setColorPair(colorPair)
         self.ui.putStrXY(self.offset+x, y, txt)
+    def timeStamp(self, y, timeStamp):
+        self.ui.setColorPair(50)
+        self.ui.putStrXY(0, y, timeStamp)
     def update(self):
         self.putStrXY(0, self.cursorY - self.begin, " "*((MAX-MIN)/1))
         self.putStrXY(self.cursorX, self.cursorY - self.begin, "+", 2)
         for beat in range(self.begin, self.end+1):
-            for note in self.beats[beat]:
-                y = beat - self.begin
+            y = beat - self.begin
+            seconds = 60.0 * beat / self.bpm
+            minutes = int(seconds / 60)
+            seconds = seconds % 60
+            milisec = int(1000*(seconds - int(seconds)))
+            self.timeStamp(y,"%02d:%2d.%03d"%(minutes,int(seconds),milisec))
+            for [idx,first] in self.beats[beat]:
+                note = self.track.track[idx].note
                 x = MIN if note < MIN else MAX if note > MAX else note
                 x -= MIN
                 if self.ui != None:
@@ -113,12 +139,38 @@ class Display:
                         logger.log("update() - beat = %d"%beat)
                         logger.log("update() - cursorY = %d"%self.cursorY)
                         color = 282
-                    self.putStrXY(x, y, "o", color)
+                    if first:
+                        self.putStrXY(x, y, "O", color)
+                    else:
+                        self.putStrXY(x, y, "|", color)
         self.ui.refresh()
+    def quit(self):
+        self.player.stop()
+        self.metronome.stop()
     def enter(self):
-        beat = self.cursorY
+        self.playing = self.playing == False
+        ## Play
+        if self.playing:
+            logger.log("enter() - Play")
+            beat = self.cursorY
+            first = False
+            while not first:
+                for idx,first in self.beats[beat]:
+                    if first:
+                        break
+                beat += 1
+            track = self.track.subTrack(idx)
+            self.player.setTrack(track)
+
+            self.player.play()
+            self.metronome.play()
+        ## Stop
+        else:
+            logger.log("enter() - Pause")
+            self.player.pause()
+            self.metronome.pause()
+            self.player.clearTrack()
         note = self.cursorX
-        logger.log("enter()")
     def up(self):
         self.cursorY = max(0, self.cursorY-1)
         logger.log("Up. cursorY = %d"%self.cursorY)

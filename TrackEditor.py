@@ -40,10 +40,10 @@ midi = "-m" in argv
 fname = argv[1]
 
 track = Track()
-#try:
-track.readTrackFile(fname, fro, to)
-#except:
-#    exit("Wrong filename {}".format(fname))
+try:
+    track.readTrackFile(fname, fro, to)
+except:
+    exit("Wrong filename {}".format(fname))
 
 p = Piano()
 player = Player()

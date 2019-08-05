@@ -22,10 +22,10 @@ ui = UI()
 ui.startColor()
 widht,height = map(int, ui.size())
 
-win = ui.newWindow
 
 display = Display(ui, track)
 display.createList()
+display.update()
 
 while 1:
     _k = ui.getChar()
@@ -47,7 +47,8 @@ while 1:
     elif _k == 10: # enter
         display.enter()
     elif _k == 27 or k == "q":
-        break
+		display.quit()
+		break
     else:
         ui.setColorPair(200)
         print "%d"%_k

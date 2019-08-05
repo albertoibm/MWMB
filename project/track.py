@@ -13,6 +13,12 @@ class Track:
             self.track = [] ## List of messages
         else:
             self.track = track
+    def subTrack(self,fro = 0, to = -1):
+        if fro < len(self.track) and to <= len(self.track):
+            subtrack = self.track[fro:to]
+            return Track( track = subtrack, tpb = self.ticksPerBeat, bpm = self.beatsPerMinute)
+        else:
+            return Track()
     def clear(self):
         self.track = []
     def isEmpty(self):
