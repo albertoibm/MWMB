@@ -49,14 +49,15 @@ class MWMB:
 
         ui = UI()
         ui.startColor()
-        height,width = map(int,ui.size())
-        
+        height,width = list(map(int,ui.size()))
+        h3 = int(round(height/3))
+        w3 = int(round(width/3))
         # Create buttons
         for key in keys:
             idx = keys.index(key)
-            x = (idx % 3) * width / 3
-            y = (idx / 3) * height / 3
-            win = ui.newWindow(height/3,width/3,"btn_{}".format(key),x,y)
+            x = int(idx % 3) * w3
+            y = int(idx / 3) * h3
+            win = ui.newWindow(h3,w3,"btn_{}".format(key),x,y)
             self.pad[key] = Button(self.piano, self.rec, win, int(key))
         ui.refresh()
         for k in keys:
@@ -135,7 +136,7 @@ class MWMB:
 def usage():
     print("Usage:")
     print("")
-    print("%s <options>"%argv[0])
+    print(("%s <options>"%argv[0]))
     print("")
     print("-h or --help\tThis help")
     print("-i or --input\tChoose an input Midi device from a list of available ones")
@@ -153,18 +154,18 @@ if __name__ == "__main__":
     [ins,outs] = piano.listDevices()
     if "-i" in argv or "--input" in argv:
         print("[+] List of input devices")
-	for i in range(len(ins)):
-	    print "%d: %s"%(i+1,ins[i])
-	inDev = ins[int(raw_input("Select input device: "))-1]
+        for i in range(len(ins)):
+            print("%d: %s"%(i+1,ins[i]))
+        inDev = ins[int(input("Select input device: "))-1]
     else:
-	inDev = ins[0]
+        inDev = ins[0]
     if "-o" in argv or "--output" in argv:
-	print "[+] List of output devices"
-	for i in range(len(outs)):
-	    print "%d: %s"%(i+1,outs[i])
-	outDev = outs[int(raw_input("Select output device: "))-1]
+        print("[+] List of output devices")
+        for i in range(len(outs)):
+            print("%d: %s"%(i+1,outs[i]))
+        outDev = outs[int(input("Select output device: "))-1]
     else:
-	outDev = outs[0]
+        outDev = outs[0]
 
     main = MWMB(piano, inDev, outDev)
     main.run()

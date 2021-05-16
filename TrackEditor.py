@@ -5,18 +5,18 @@ from piano.track import Track
 from piano.player import Player
 from piano.piano import Piano
 
-LO = unichr(9603)
-HI = unichr(9600)
-MD = unichr(9644)
+LO = chr(9603)
+HI = chr(9600)
+MD = chr(9644)
 
 if len(argv) < 2:
-    print "Usage:"
-    print argv[0] +  " [.trk file] <options>"
-    print "-f <0>\t\tFrom line number"
-    print "-t <0>\t\tTo line number"
-    print "-a <0>\t\tAround line number (20 lines)"
-    print "-s    \t\tSave .trk file"
-    print "-m    \t\tSave .mid file"
+    print("Usage:")
+    print(argv[0] +  " [.trk file] <options>")
+    print("-f <0>\t\tFrom line number")
+    print("-t <0>\t\tTo line number")
+    print("-a <0>\t\tAround line number (20 lines)")
+    print("-s    \t\tSave .trk file")
+    print("-m    \t\tSave .mid file")
     exit()
 
 if "-f" in argv:
@@ -40,10 +40,10 @@ midi = "-m" in argv
 fname = argv[1]
 
 track = Track()
-try:
-    track.readTrackFile(fname, fro, to)
-except:
-    exit("Wrong filename {}".format(fname))
+#try:
+track.readTrackFile(fname, fro, to)
+#except :
+#    exit("Wrong filename {}".format(fname))
 
 p = Piano()
 player = Player()
@@ -58,11 +58,12 @@ player.playOnce(verbose=True)
 try:
     sleep(track.getLengthInSec())
 except:
-    if raw_input("Quit? (y/n)") == 'y':
+    if input("Quit? (y/n)") == 'y':
         player.pause()
 player.stop()
 
 if save:
     track.writeTrackFile(fname+".corr")
 if midi:
+    print("Saving track {}.mid".format(fname))
     track.saveFile(fname+".mid")

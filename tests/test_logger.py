@@ -1,5 +1,6 @@
-from piano.piano import Piano
-from piano.recorder import Recorder
+from piano import Piano
+from recorder import Recorder
+from logger import Logger
 from sys import argv
 import mido
 
@@ -12,7 +13,7 @@ import mido
 ### Create instance of Piano and Recorder
 p = Piano()
 rec = Recorder()
-
+log = Logger(p,rec)
 ### Options
 verbose = "-v" in argv
 
@@ -35,23 +36,36 @@ else:
     outDev = mido.get_output_names()[0]
 
 ### Connecting to input and output devices
-if not p.connect(inDev,outDev) :
+print("Testing inDev and outDev")
+if p.connect(inDev,outDev) :
+    if verbose:
+        print("PASSED")
+else:
     if verbose:
         print("FAILED")
-    exit()
 
 ### Connecting recorder with piano
-if not rec.setPiano(p):
+print("Testing recorder and piano connection")
+if rec.setPiano(p):
+    if rec.piano == p and rec.handler == p.input.callback:
+        if verbose:
+            print("PASSED")
+    else:
+        if verbose:
+            print("FAILED")
+else: 
     if verbose:
         print("setPiano() returned error!")
-    exit()
+        print("FAILED")
 
 
 ### Record something
-print("Recording from "+inDev)
+print("Testing recording")
 rec.record()    
-track = rec.emit()
-name = input("Filename: ")
-name = name.replace(" ","_")
-name = name.replace("/","-")
-track.saveFile(name+".mid")
+
+### Play it back in a loop
+input("Testing playback. Press enter")
+try:
+    while 1:rec.play()
+except KeyboardInterrupt:pass
+log.close()

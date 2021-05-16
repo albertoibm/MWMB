@@ -9,8 +9,8 @@ from piano.display import Display
 
 
 if len(argv) < 2:
-    print "Usage:"
-    print argv[0] + " [.trk file]"
+    print("Usage:")
+    print(argv[0] + " [.trk file]")
     exit()
 
 ## Read trk file
@@ -20,7 +20,7 @@ track.readTrackFile(fname)
 
 ui = UI()
 ui.startColor()
-widht,height = map(int, ui.size())
+widht,height = list(map(int, ui.size()))
 
 
 display = Display(ui, track)
@@ -51,9 +51,9 @@ while 1:
 		break
     else:
         ui.setColorPair(200)
-        print "%d"%_k
+        print("%d"%_k)
     display.update()
     ui.log("%d"%_k)
     ui.refresh()
 ui.quit()
-print "%d"%_k
+print("%d"%_k)
